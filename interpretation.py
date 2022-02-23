@@ -1,3 +1,4 @@
+from turtle import color
 from matplotlib.pyplot import figure
 
 
@@ -107,6 +108,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         figure(figsize=(10, 10), dpi=80);
         importance_df_shap.plot.barh(y="importance",x="name",);
         plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.savefig("shap_importance.pdf")
         #plt.show()
         #importance_dict_shap=importance_df_shap.to_dict(orient='index');
@@ -159,6 +161,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         #Ploting
         importance_df_Lime.plot.barh(y="importance",x="name",color="#66FF66");
         plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.savefig("lime_importance.pdf")
         max_lime=max(importance_df_Lime.importance);
         normal_lime=[]
@@ -192,6 +195,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         #Ploting
         importance_df_lgbm.plot.barh(y="importance",x="name",color="#00008B");
         plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.savefig("lgbm_importance.pdf")
         max_lgbm=max(importance_df_lgbm.importance);
         normal_lgbm=[]
@@ -239,6 +243,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         #Ploting
         importance_df_dice_local_cf.plot.barh(y="importance",x="name",color="#FF6103");
         plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.savefig("dice_local_cf_importance.pdf")
         #plt.show()
         #js_dice_lc_cf = importance_df_dice_local_cf.to_json(orient = "values")
@@ -272,6 +277,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         #Ploting
         importance_df_dice_local.plot.barh(y="importance",x="name",color="#FFB90F");
         plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.savefig("dice_local_importance.pdf")
         #plt.show()
         #js_dice_lc_cf = importance_df_dice_local_cf.to_json(orient = "values")
@@ -303,6 +309,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         #Ploting
         importance_df_dice_global.plot.barh(y="importance",x="name",color="#BF3EFF");
         plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.savefig("dice_global.pdf")
         #plt.show()
         #js_dice_global = importance_df_dice_global.to_json(orient = "values")
@@ -337,7 +344,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_shap.importance:
             normlize=i/max_shap;
             normal_shap.append(normlize);
-        importance_df_shap_norm = pd.DataFrame([test_data.columns.tolist(), normal_shap]).T
+        importance_df_shap_norm = pd.DataFrame([importance_df_shap.name.tolist(), normal_shap]).T
         importance_df_shap_norm.columns = ['name', 'importance_normlized']
         importance_df_shap_norm = importance_df_shap_norm.sort_values('importance_normlized', ascending=False)
         importance_df_shap_norm.reset_index(drop=True)
@@ -367,7 +374,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_Lime.importance:
             normlize=i/max_lime;
             normal_lime.append(normlize);
-        importance_df_lime_norm = pd.DataFrame([test_data.columns.tolist(), normal_lime]).T
+        importance_df_lime_norm = pd.DataFrame([importance_df_Lime.name.tolist(), normal_lime]).T
         importance_df_lime_norm.columns = ['name', 'importance_normlized']
         importance_df_lime_norm = importance_df_lime_norm.sort_values('importance_normlized', ascending=False)
         importance_df_lime_norm.reset_index(drop=True)
@@ -383,10 +390,12 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         
         max_lgbm=max(importance_df_lgbm.importance);
         normal_lgbm=[]
+
         for i in importance_df_lgbm.importance:
             normlize=i/max_lgbm;
             normal_lgbm.append(normlize);
-        importance_df_lgbm_norm = pd.DataFrame([test_data.columns.tolist(), normal_lgbm]).T
+
+        importance_df_lgbm_norm = pd.DataFrame([importance_df_lgbm.name.tolist(), normal_lgbm]).T
         importance_df_lgbm_norm.columns = ['name', 'importance_normlized']
         importance_df_lgbm_norm = importance_df_lgbm_norm.sort_values('importance_normlized', ascending=False)
         importance_df_lgbm_norm.reset_index(drop=True)
@@ -405,9 +414,11 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
                                        desired_class="opposite",
                                        verbose=False,
                                        features_to_vary="all")
+
         #Local Feature Importance Scores with Counterfactuals list
         imp = exp_dice.local_feature_importance(query_instance, cf_examples_list=e1.cf_examples_list);
         result = imp.local_importance[0].items()
+
         # Convert object to a list
         data_imp = list(result);
         feature_imp1 = pd.DataFrame(sorted(data_imp), columns=['Feature','Value'])
@@ -419,7 +430,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_dice_local_cf.importance:
             normlize=i/max_dice_local_cf;
             normal_dice_loc_cf.append(normlize);
-        importance_df_dice_local_cf_norm = pd.DataFrame([test_data.columns.tolist(), normal_dice_loc_cf]).T
+        importance_df_dice_local_cf_norm = pd.DataFrame([importance_df_dice_local_cf.name.tolist(), normal_dice_loc_cf]).T
         importance_df_dice_local_cf_norm.columns = ['name', 'importance_normlized']
         importance_df_dice_local_cf_norm = importance_df_dice_local_cf_norm.sort_values('importance_normlized', ascending=False)
         importance_df_dice_local_cf_norm.reset_index(drop=True)
@@ -446,7 +457,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_dice_local.importance:
             normlize=i/max_dice_local;
             normal_dice_loc.append(normlize);
-        importance_df_dice_local_norm = pd.DataFrame([test_data.columns.tolist(), normal_dice_loc]).T
+        importance_df_dice_local_norm = pd.DataFrame([importance_df_dice_local.name.tolist(), normal_dice_loc]).T
         importance_df_dice_local_norm.columns = ['name', 'importance_normlized']
         importance_df_dice_local_norm = importance_df_dice_local_cf_norm.sort_values('importance_normlized', ascending=False)
         importance_df_dice_local_norm.reset_index(drop=True)
@@ -474,7 +485,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_dice_global.importance:
             normlize=i/max_dice_global;
             normal_dice_g.append(normlize);
-        importance_df_dice_g_norm = pd.DataFrame([test_data.columns.tolist(), normal_dice_g]).T
+        importance_df_dice_g_norm = pd.DataFrame([importance_df_dice_global.name.tolist(), normal_dice_g]).T
         importance_df_dice_g_norm.columns = ['name', 'importance_normlized']
         importance_df_dice_g_norm = importance_df_dice_local_cf_norm.sort_values('importance_normlized', ascending=False)
         importance_df_dice_g_norm.reset_index(drop=True)
@@ -483,17 +494,35 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
         all_normlize_pd=pd.DataFrame({'shap_norm':importance_df_shap_norm.importance_normlized.values,'lime_norm':importance_df_lime_norm.importance_normlized.values,
         'lgbm_norm':importance_df_lgbm_norm.importance_normlized.values,'dice_local_cf_norm':importance_df_dice_local_cf_norm.importance_normlized.values,
-        'dice_loc_norm':importance_df_dice_local_norm.importance_normlized.values,'dice_glo_norm':importance_df_dice_g_norm.importance_normlized.values},index=test_data.columns.tolist())
+        'dice_loc_norm':importance_df_dice_local_norm.importance_normlized.values,'dice_glo_norm':importance_df_dice_g_norm.importance_normlized.values})
+        normlazied_df=pd.DataFrame();
+        for i in test_data.columns.tolist():
+            indd=importance_df_shap_norm.loc[(importance_df_shap_norm["name"]==i)].importance_normlized
+            jdd=importance_df_shap_norm.iloc[indd.index[0]].importance_normlized
+            indd1=importance_df_lime_norm.loc[(importance_df_lime_norm["name"]==i)].importance_normlized
+            jdd1=importance_df_lime_norm.iloc[indd1.index[0]].importance_normlized
+            indd2=importance_df_lgbm_norm.loc[(importance_df_lgbm_norm["name"]==i)].importance_normlized
+            jdd2=importance_df_lgbm_norm.iloc[indd2.index[0]].importance_normlized
+            indd3=importance_df_dice_local_cf_norm.loc[(importance_df_dice_local_cf_norm["name"]==i)].importance_normlized
+            jdd3=importance_df_dice_local_cf_norm.iloc[indd3.index[0]].importance_normlized
+            indd4=importance_df_dice_local_norm.loc[(importance_df_dice_local_norm["name"]==i)].importance_normlized
+            jdd4=importance_df_dice_local_norm.iloc[indd4.index[0]].importance_normlized
+            indd5=importance_df_dice_g_norm.loc[(importance_df_dice_local_cf_norm["name"]==i)].importance_normlized
+            jdd5=importance_df_dice_g_norm.iloc[indd5.index[0]].importance_normlized
+            normlazied_df[i]=[jdd,jdd1,jdd2,jdd3,jdd4,jdd5]
+        
         #Ploting all 
-        
-        
-        all_normlize_pd.plot.barh();
+        normlazied_df.index=["shap","lime","lgbm","dice_local_cf","dice_local","dice_global"]
+        normlazied_df.plot.barh(colormap='tab10');
         plt.gca().invert_yaxis()
+        
+        plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left',fontsize = 'small',prop={'size': 5})
+        plt.tight_layout()
         plt.savefig("normalize.pdf")
         plt.show()
         
 
-        importance_all_norm = all_normlize_pd.to_dict('index')
+        importance_all_norm = normlazied_df.to_dict('index')
         with open('all_norm_Importance.json', 'w') as outfile:
             return json.dump(importance_all_norm,outfile)
 
