@@ -45,15 +45,20 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
     col_names=trian_data.columns;
     # loop to change each column to float type
+
     for col in col_names:
         trian_data[col] = trian_data[col].astype('float',copy=False);
         test_data[col]= test_data[col].astype('float',copy=False);
     
     #Scaling using the Standard Scaler
+
     sc_1=StandardScaler();
     X_1=pd.DataFrame(sc_1.fit_transform(trian_data));
     X_train, X_val, y_train, y_val = train_test_split(X_1, trian_labels, test_size=0.25, random_state=0) # 0.25 x 0.8 = 0
     test_scale_data=pd.DataFrame(sc_1.fit_transform(test_data))
+
+    ## case switching  for if model 
+    ## can  use diffrent Models 
     if model =="lgbm": 
 
         #Bulding them Model
