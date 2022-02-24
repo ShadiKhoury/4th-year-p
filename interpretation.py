@@ -158,6 +158,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_Lime= pd.DataFrame(a)
         importance_df_Lime.columns = ['name', 'importance']
         importance_df_Lime = importance_df_Lime.sort_values('importance', ascending=False)
+        importance_df_Lime["importance"]=abs(importance_df_Lime.importance)
         #Ploting
         importance_df_Lime.plot.barh(y="importance",x="name",color="#66FF66");
         plt.gca().invert_yaxis()
@@ -298,7 +299,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
         query_instance=test_data[0:10];
-        cobj = exp_dice.global_feature_importance(query_instance, total_CFs=10, posthoc_sparsity_param=None)
+        cobj = exp_dice.global_feature_importance(query_instance, total_CFs=10, posthoc_sparsity_param=None,)
         result = cobj.summary_importance.items()
         # Convert object to a list
         data_imp = list(result)
@@ -368,7 +369,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_Lime= pd.DataFrame(a)
         importance_df_Lime.columns = ['name', 'importance']
         importance_df_Lime = importance_df_Lime.sort_values('importance', ascending=False)
-        
+        importance_df_Lime["importance"]=abs(importance_df_Lime.importance)
         max_lime=max(importance_df_Lime.importance);
         normal_lime=[]
         for i in importance_df_Lime.importance:
@@ -454,6 +455,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_dice_local = importance_df_dice_local.sort_values('importance', ascending=False)
         max_dice_local=max(importance_df_dice_local.importance);
         normal_dice_loc=[]
+
         for i in importance_df_dice_local.importance:
             normlize=i/max_dice_local;
             normal_dice_loc.append(normlize);
