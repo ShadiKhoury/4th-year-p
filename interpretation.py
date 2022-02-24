@@ -49,12 +49,27 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
     for col in col_names:
         trian_data[col] = trian_data[col].astype('float',copy=False);
         test_data[col]= test_data[col].astype('float',copy=False);
-    
+    #selecting raws with no nan values
+    new_train=trian_data
+    new_train["Result"]=trian_labels
+    new_test=test_data
+    new_test["Result"]=test_labels
+    trian_data_nonull=new_train.dropna()
+    test_data_nonull=new_test.dropna()
+    trian_label_nonull=trian_data_nonull["Result"]
+    test_label_nonull=test_data_nonull["Result"]
+    trian_data_nonull.drop(labels = ["Result",], axis=1,inplace=True )
+    test_data_nonull.drop(labels = ["Result",], axis=1,inplace=True )
+    for col in col_names:
+        trian_data_nonull[col] = trian_data_nonull[col].astype('float',copy=False);
+        test_data_nonull[col]= test_data_nonull[col].astype('float',copy=False);
+    trian_data_nonull.reset_index(drop=True, inplace=True)
+    test_data_nonull.reset_index(drop=True, inplace=True)
     #Scaling using the Standard Scaler
     sc_1=StandardScaler();
-    X_1=pd.DataFrame(sc_1.fit_transform(trian_data));
-    X_train, X_val, y_train, y_val = train_test_split(X_1, trian_labels, test_size=0.25, random_state=0) # 0.25 x 0.8 = 0
-    test_scale_data=pd.DataFrame(sc_1.fit_transform(test_data))
+    X_1=pd.DataFrame(sc_1.fit_transform(trian_data_nonull));
+    X_train, X_val, y_train, y_val = train_test_split(X_1, trian_label_nonull, test_size=0.25, random_state=0) # 0.25 x 0.8 = 0
+    test_scale_data=pd.DataFrame(sc_1.fit_transform(test_data_nonull))
     if model =="lgbm": 
 
         #Bulding them Model
@@ -99,7 +114,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         shap_values = explainer.shap_values(test_scale_data);
         #shap.summary_plot(shap_values[1], features=test_scale_data, feature_names=test_data.columns,)
         shap_sum = np.abs(shap_values[1]).mean(axis=0)
-        importance_df_shap = pd.DataFrame([test_data.columns.tolist(), shap_sum.tolist()]).T
+        importance_df_shap = pd.DataFrame([test_data_nonull.columns.tolist(), shap_sum.tolist()]).T
         importance_df_shap.columns = ['name', 'importance']
         importance_df_shap = importance_df_shap.sort_values('importance', ascending=False)
         importance_df_shap.reset_index(drop=True)
@@ -118,7 +133,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_shap.importance:
             normlize=i/max_shap;
             normal_shap.append(normlize);
-        importance_df_shap_norm = pd.DataFrame([test_data.columns.tolist(), normal_shap]).T
+        importance_df_shap_norm = pd.DataFrame([test_data_nonull.columns.tolist(), normal_shap]).T
         importance_df_shap_norm.columns = ['name', 'importance normlized']
         importance_df_shap_norm = importance_df_shap_norm.sort_values('importance normlized', ascending=False)
         importance_df_shap_norm.reset_index(drop=True)
@@ -147,13 +162,13 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         X_val= X_val.to_numpy()
         y_train = y_train.to_numpy()
         y_val = y_val.to_numpy()
-        num_f=len(test_data.columns)
+        num_f=len(test_data_nonull.columns)
         explainer = LimeTabularExplainer(X_train,mode="classification", 
                                  feature_names=test_data.columns, 
                                  class_names=["Postive","Negative",],
                                  discretize_continuous=False)
         i = np.random.randint(0, X_val.shape[0]) 
-        exp = explainer.explain_instance(X_val[37157],  lgbm_clf.predict_proba, num_features=num_f,)#need to change to i
+        exp = explainer.explain_instance(X_val[i],  lgbm_clf.predict_proba, num_features=num_f,)#need to change to i
         a=exp.as_list()
         importance_df_Lime= pd.DataFrame(a)
         importance_df_Lime.columns = ['name', 'importance']
@@ -169,7 +184,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_Lime.importance:
             normlize=i/max_lime;
             normal_lime.append(normlize);
-        importance_df_lime_norm = pd.DataFrame([test_data.columns.tolist(), normal_lime]).T
+        importance_df_lime_norm = pd.DataFrame([test_data_nonull.columns.tolist(), normal_lime]).T
         importance_df_lime_norm.columns = ['name', 'importance normlized']
         importance_df_lime_norm = importance_df_lime_norm.sort_values('importance normlized', ascending=False)
         importance_df_lime_norm.reset_index(drop=True)
@@ -187,7 +202,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
     #lgbm_plot_imprtance
     elif feature_imprtance_type=="lgbm_plot_importance":
-        feature_imp = pd.DataFrame(sorted(zip(lgbm_clf.feature_importances_,trian_data.columns)), columns=['Value','Feature'])
+        feature_imp = pd.DataFrame(sorted(zip(lgbm_clf.feature_importances_,test_data_nonull.columns)), columns=['Value','Feature'])
         importance_df_lgbm=feature_imp
         importance_df_lgbm.columns = ['name', 'importance']
         importance_df_lgbm=importance_df_lgbm[['importance','name']]
@@ -203,7 +218,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         for i in importance_df_lgbm.importance:
             normlize=i/max_lgbm;
             normal_lgbm.append(normlize);
-        importance_df_lgbm_norm = pd.DataFrame([test_data.columns.tolist(), normal_lgbm]).T
+        importance_df_lgbm_norm = pd.DataFrame([test_data_nonull.columns.tolist(), normal_lgbm]).T
         importance_df_lgbm_norm.columns = ['name', 'importance normlized']
         importance_df_lgbm_norm = importance_df_lgbm_norm.sort_values('importance normlized', ascending=False)
         importance_df_lgbm_norm.reset_index(drop=True)
@@ -220,14 +235,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
     #dice local with cf
     elif feature_imprtance_type=="dice_local_cf":
-        trainn_data=trian_data;
-        trainn_data["labels"]=trian_labels
+        trainn_data=trian_data_nonull;
+        trainn_data["labels"]=trian_label_nonull
         dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data[4:5];
+        query_instance=test_data_nonull[4:5];
         e1 = exp_dice.generate_counterfactuals(query_instance, total_CFs=10, 
                                        desired_class="opposite",
                                        verbose=False,
@@ -259,14 +274,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
     #Dice local
     elif feature_imprtance_type=="dice_local":
-        trainn_data=trian_data;
-        trainn_data["labels"]=trian_labels
+        trainn_data=trian_data_nonull;
+        trainn_data["labels"]=trian_label_nonull
         dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data[4:5];
+        query_instance=test_data_nonull[4:5];
         imp = exp_dice.local_feature_importance(query_instance, posthoc_sparsity_param=None);
         result = imp.local_importance[0].items()
         # Convert object to a list
@@ -291,14 +306,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
 
     elif feature_imprtance_type=="dice_global":
-        trainn_data=trian_data;
-        trainn_data["labels"]=trian_labels
+        trainn_data=trian_data_nonull;
+        trainn_data["labels"]=trian_label_nonull
         dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data[0:10];
+        query_instance=test_data_nonull[0:10];
         cobj = exp_dice.global_feature_importance(query_instance, total_CFs=10, posthoc_sparsity_param=None,)
         result = cobj.summary_importance.items()
         # Convert object to a list
@@ -320,6 +335,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         with open('Dice_global_Feature_Importance.json', 'w') as outfile:
             return json.dump(importance_dict_dice_glo,outfile)
 
+## ALL NORMLIZE
     elif feature_imprtance_type=="All_normilaze":
 
 
@@ -334,7 +350,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         shap_values = explainer.shap_values(test_scale_data);
         #shap.summary_plot(shap_values[1], features=test_scale_data, feature_names=test_data.columns,)
         shap_sum = np.abs(shap_values[1]).mean(axis=0)
-        importance_df_shap = pd.DataFrame([test_data.columns.tolist(), shap_sum.tolist()]).T
+        importance_df_shap = pd.DataFrame([test_data_nonull.columns.tolist(), shap_sum.tolist()]).T
         importance_df_shap.columns = ['name', 'importance']
         importance_df_shap = importance_df_shap.sort_values('importance', ascending=False)
         importance_df_shap.reset_index(drop=True)
@@ -358,13 +374,13 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         X_val= X_val.to_numpy()
         y_train = y_train.to_numpy()
         y_val = y_val.to_numpy()
-        num_f=len(test_data.columns)
+        num_f=len(test_data_nonull.columns)
         explainer = LimeTabularExplainer(X_train,mode="classification", 
                                  feature_names=test_data.columns, 
                                  class_names=["Postive","Negative",],
                                  discretize_continuous=False)
         i = np.random.randint(0, X_val.shape[0]) 
-        exp = explainer.explain_instance(X_val[37157],  lgbm_clf.predict_proba, num_features=num_f,)#need to change to i
+        exp = explainer.explain_instance(X_val[i],  lgbm_clf.predict_proba, num_features=num_f,)#need to change to i
         a=exp.as_list()
         importance_df_Lime= pd.DataFrame(a)
         importance_df_Lime.columns = ['name', 'importance']
@@ -382,7 +398,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
         ##lgbm##
 
-        feature_imp = pd.DataFrame(sorted(zip(lgbm_clf.feature_importances_,trian_data.columns)), columns=['Value','Feature'])
+        feature_imp = pd.DataFrame(sorted(zip(lgbm_clf.feature_importances_,trian_data_nonull.columns)), columns=['Value','Feature'])
         importance_df_lgbm=feature_imp
         importance_df_lgbm.columns = ['name', 'importance']
         importance_df_lgbm=importance_df_lgbm[['importance','name']]
@@ -403,14 +419,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
         ## Dice_local_cf ##
 
-        trainn_data=trian_data;
-        trainn_data["labels"]=trian_labels
+        trainn_data=trian_data_nonull;
+        trainn_data["labels"]=trian_label_nonull
         dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data[4:5];
+        query_instance=test_data_nonull[4:5];
         e1 = exp_dice.generate_counterfactuals(query_instance, total_CFs=10, 
                                        desired_class="opposite",
                                        verbose=False,
@@ -437,14 +453,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_dice_local_cf_norm.reset_index(drop=True)
 
         ## Dice local ##
-        trainn_data=trian_data;
-        trainn_data["labels"]=trian_labels
+        trainn_data=trian_data_nonull;
+        trainn_data["labels"]=trian_label_nonull
         dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data[4:5];
+        query_instance=test_data_nonull[4:5];
         imp = exp_dice.local_feature_importance(query_instance, posthoc_sparsity_param=None);
         result = imp.local_importance[0].items()
         # Convert object to a list
@@ -465,14 +481,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_dice_local_norm.reset_index(drop=True)
 
         ## Dice global ##
-        trainn_data=trian_data;
-        trainn_data["labels"]=trian_labels
+        trainn_data=trian_data_nonull;
+        trainn_data["labels"]=trian_label_nonull
         dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data[0:10];
+        query_instance=test_data_nonull[0:10];
         cobj = exp_dice.global_feature_importance(query_instance, total_CFs=10, posthoc_sparsity_param=None)
         result = cobj.summary_importance.items()
         # Convert object to a list
@@ -498,23 +514,30 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         'lgbm_norm':importance_df_lgbm_norm.importance_normlized.values,'dice_local_cf_norm':importance_df_dice_local_cf_norm.importance_normlized.values,
         'dice_loc_norm':importance_df_dice_local_norm.importance_normlized.values,'dice_glo_norm':importance_df_dice_g_norm.importance_normlized.values})
         normlazied_df=pd.DataFrame();
-        for i in test_data.columns.tolist():
+        for i in test_data_nonull.columns.tolist():
+            #shap
             indd=importance_df_shap_norm.loc[(importance_df_shap_norm["name"]==i)].importance_normlized
             jdd=importance_df_shap_norm.iloc[indd.index[0]].importance_normlized
+            # lime
             indd1=importance_df_lime_norm.loc[(importance_df_lime_norm["name"]==i)].importance_normlized
             jdd1=importance_df_lime_norm.iloc[indd1.index[0]].importance_normlized
+            # lgbm
             indd2=importance_df_lgbm_norm.loc[(importance_df_lgbm_norm["name"]==i)].importance_normlized
             jdd2=importance_df_lgbm_norm.iloc[indd2.index[0]].importance_normlized
+            # dice local cf
             indd3=importance_df_dice_local_cf_norm.loc[(importance_df_dice_local_cf_norm["name"]==i)].importance_normlized
             jdd3=importance_df_dice_local_cf_norm.iloc[indd3.index[0]].importance_normlized
+            # dice local
             indd4=importance_df_dice_local_norm.loc[(importance_df_dice_local_norm["name"]==i)].importance_normlized
             jdd4=importance_df_dice_local_norm.iloc[indd4.index[0]].importance_normlized
+            #dice global
             indd5=importance_df_dice_g_norm.loc[(importance_df_dice_local_cf_norm["name"]==i)].importance_normlized
             jdd5=importance_df_dice_g_norm.iloc[indd5.index[0]].importance_normlized
-            normlazied_df[i]=[jdd,jdd1,jdd2,jdd3,jdd4,jdd5]
+            # all methods
+            normlazied_df[i]=[jdd,jdd1,jdd2,jdd5]
         
         #Ploting all 
-        normlazied_df.index=["shap","lime","lgbm","dice_local_cf","dice_local","dice_global"]
+        normlazied_df.index=["shap","lime","lgbm","dice_global"]
         normlazied_df.plot.barh(colormap='tab10');
         plt.gca().invert_yaxis()
         
