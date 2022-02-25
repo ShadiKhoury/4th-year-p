@@ -164,7 +164,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         y_val = y_val.to_numpy()
         num_f=len(test_data_nonull.columns)
         explainer = LimeTabularExplainer(X_train,mode="classification", 
-                                 feature_names=test_data.columns, 
+                                 feature_names=test_data_nonull.columns, 
                                  class_names=["Postive","Negative",],
                                  discretize_continuous=False)
         i = np.random.randint(0, X_val.shape[0]) 
