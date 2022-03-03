@@ -499,6 +499,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_dice_global = importance_df_dice_global.sort_values('importance', ascending=False)
 
         max_dice_global=max(importance_df_dice_global.importance);
+        min_dice_global=min(importance_df_dice_global.importance);
         normal_dice_g=[]
         for i in importance_df_dice_global.importance:
             normlize=i/max_dice_global;
