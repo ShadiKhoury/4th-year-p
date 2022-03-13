@@ -389,7 +389,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         max_lime=max(importance_df_Lime.importance);
         normal_lime=[]
         for i in importance_df_Lime.importance:
-            normlize=i/max_lime;
+            normlize=abs(i/max_lime);
             normal_lime.append(normlize);
         importance_df_lime_norm = pd.DataFrame([importance_df_Lime.name.tolist(), normal_lime]).T
         importance_df_lime_norm.columns = ['name', 'importance_normlized']
@@ -409,7 +409,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         normal_lgbm=[]
 
         for i in importance_df_lgbm.importance:
-            normlize=i/max_lgbm;
+            normlize=abs(i/max_lgbm);
             normal_lgbm.append(normlize);
 
         importance_df_lgbm_norm = pd.DataFrame([importance_df_lgbm.name.tolist(), normal_lgbm]).T
@@ -444,8 +444,9 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         importance_df_dice_local_cf = importance_df_dice_local_cf.sort_values('importance', ascending=False)
         max_dice_local_cf=max(importance_df_dice_local_cf.importance);
         normal_dice_loc_cf=[]
+
         for i in importance_df_dice_local_cf.importance:
-            normlize=i/max_dice_local_cf;
+            normlize=abs(i/max_dice_local_cf);
             normal_dice_loc_cf.append(normlize);
         importance_df_dice_local_cf_norm = pd.DataFrame([importance_df_dice_local_cf.name.tolist(), normal_dice_loc_cf]).T
         importance_df_dice_local_cf_norm.columns = ['name', 'importance_normlized']
@@ -473,7 +474,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         normal_dice_loc=[]
 
         for i in importance_df_dice_local.importance:
-            normlize=i/max_dice_local;
+            normlize=abs(i/max_dice_local);
             normal_dice_loc.append(normlize);
         importance_df_dice_local_norm = pd.DataFrame([importance_df_dice_local.name.tolist(), normal_dice_loc]).T
         importance_df_dice_local_norm.columns = ['name', 'importance_normlized']
@@ -502,7 +503,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         min_dice_global=min(importance_df_dice_global.importance);
         normal_dice_g=[]
         for i in importance_df_dice_global.importance:
-            normlize=i/max_dice_global;
+            normlize=abs(i/max_dice_global);
             normal_dice_g.append(normlize);
         importance_df_dice_g_norm = pd.DataFrame([importance_df_dice_global.name.tolist(), normal_dice_g]).T
         importance_df_dice_g_norm.columns = ['name', 'importance_normlized']
