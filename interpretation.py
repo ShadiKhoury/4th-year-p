@@ -580,8 +580,20 @@ parser.add_argument('--feature_imprtance_type', metavar='importance_type',type =
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    print ("Running File")
+    print ("Running Interpolation...")
+    import timeit
+
+    start = timeit.default_timer()
+
+    #Your statements here
+
     interpretation(args.train_data, args.test_data, args.train_labels, args.test_labels, args.model, args.feature_imprtance_type)
+    
+    stop = timeit.default_timer()
+
+    print('Time: ', stop - start) 
+    
+    print("Inerpolation Done!")
     
 
 
