@@ -1,5 +1,7 @@
 from turtle import color
 from matplotlib.pyplot import figure
+import argparse
+import sys
 
 
 def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_imprtance_type):
@@ -421,12 +423,14 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
 
         trainn_data=trian_data_nonull;
         trainn_data["labels"]=trian_label_nonull
-        dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
+        cnames=list(trainn_data.columns.values)
+        dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=cnames[0:len(cnames)-1], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
         exp_dice = dice_ml.Dice(dicedata, m, method="random")
-        query_instance=test_data_nonull[4:5];
+        query_instance=test_data_nonull[6:7];
+        #query_instance=query_instance.astype(np.int64)
         e1 = exp_dice.generate_counterfactuals(query_instance, total_CFs=10, 
                                        desired_class="opposite",
                                        verbose=False,
@@ -456,7 +460,8 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         ## Dice local ##
         trainn_data=trian_data_nonull;
         trainn_data["labels"]=trian_label_nonull
-        dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
+        cnames=list(trainn_data.columns.values)
+        dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=cnames[0:len(cnames)-1], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
@@ -484,7 +489,8 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         ## Dice global ##
         trainn_data=trian_data_nonull;
         trainn_data["labels"]=trian_label_nonull
-        dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=[], outcome_name="labels")
+        cnames=list(trainn_data.columns.values)
+        dicedata = dice_ml.Data(dataframe=trainn_data,continuous_features=cnames[0:len(cnames)-1], outcome_name="labels")
         # Using sklearn backend
         m = dice_ml.Model(model=predict_model, backend="sklearn",model_type = 'classifier')
         # Using method=random for generating CFs
@@ -553,6 +559,30 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         with open('all_norm_Importance.json', 'w') as outfile:
             return json.dump(importance_all_norm,outfile)
 
+
+
+
+
+
+parser = argparse.ArgumentParser(description='Import Data/model For Testing')
+parser.add_argument('--train_data', metavar='TrainD',
+                    help='Input Train Data')
+parser.add_argument('--test_data', metavar='TestD',
+                    help='Input Test Data')
+parser.add_argument('--train_labels', metavar='TrainL',
+                    help='Input Train Label')
+parser.add_argument('--test_labels', metavar='TestL',
+                    help='Input Test label')
+parser.add_argument('--model', metavar='Model',type = str,
+                    help='Input Moudle Name')
+parser.add_argument('--feature_imprtance_type', metavar='importance_type',type = str,
+                    help='Input importance type')
+args = parser.parse_args()
+
+if __name__ == '__main__':
+    print ("Running File")
+    interpretation(args.train_data, args.test_data, args.train_labels, args.test_labels, args.model, args.feature_imprtance_type)
+    
 
 
 
