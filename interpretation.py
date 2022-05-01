@@ -550,8 +550,11 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         plt.gca().invert_yaxis()
         
         plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left',fontsize = 'small',prop={'size': 5})
-        plt.tight_layout()
+        
+        plt.xlabel('Normlized Importance')
+        plt.ylabel('Features importance Metric')
         plt.savefig("normalize.pdf")
+        plt.tight_layout()
         plt.show()
         
 
