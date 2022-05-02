@@ -8,7 +8,7 @@ corr_matrix = data.corr()
 print(corr_matrix["cough"].sort_values(ascending=False))
 from matplotlib import pyplot as plt
 import seaborn as sns
-sns.heatmap(corr_matrix,annot=True,fmt="f")
+sns.heatmap(corr_matrix,vmax=1,square=True)
 
 fig = plt.figure(figsize = (20, 25))
 j = 0
