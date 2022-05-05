@@ -7,23 +7,165 @@ import os
 # Opening JSON file
 im_df = pd.read_json('all_norm_Importance.json')
 sorted_df_shap = im_df.sort_values(["shap"], ascending=False)
+sorted_df_lgbm = im_df.sort_values(["lgbm"], ascending=False)
+sorted_df_lime = im_df.sort_values(["lime"], ascending=False)
+sorted_df_dice = im_df.sort_values(["dice_global"], ascending=False)
 print(sorted_df_shap)
-indxs=list(sorted_df_shap.index)
-top_3_features=indxs[:3]
+indxs_shap=list(sorted_df_shap.index)
+indxs_lgbm=list(sorted_df_lgbm.index)
+indxs_lime=list(sorted_df_lime.index)
+indxs_d=list(sorted_df_dice.index)
+top_3_features_shap=indxs_shap[:3]
+top_3_features_lgbm=indxs_lgbm[:3]
+top_3_features_lime=indxs_lime[:3]
+top_3_features_dice=indxs_d[:3] 
 
 # %%
 train_data= pd.read_csv("train_data.csv")
 test_data= pd.read_csv("test_data.csv")
 label_data=pd.read_csv("train_labels.csv")
-shap_data_t=train_data[top_3_features]
-shap_data_test=test_data[top_3_features]
+##### shap
+shap_data_t=train_data[top_3_features_shap]
+shap_data_test=test_data[top_3_features_shap]
 shap_data_t.to_csv('shap_data_t.csv', index=False)
 shap_data_test.to_csv('shap_data_test.csv', index=False)
-# %%
-#check the AUC of the top 5 features
-#import os
-#command = 'python interpretation.py --train_data "shap_data_t.csv" --test_data "shap_data_test.csv" --train_labels "train_labels.csv" --test_labels "test_labels.csv" --model "lgbm" --feature_imprtance_type "All_normilaze"'
-#os.system(command)
+################# lgbm
+lgbm_data_t=train_data[top_3_features_lgbm]
+lgbm_data_test=test_data[top_3_features_lgbm]
+lgbm_data_t.to_csv('lgbm_data_t.csv', index=False)
+lgbm_data_test.to_csv('lgbm_data_test.csv', index=False)
+######## lime
+lime_data_t=train_data[top_3_features_lime]
+lime_data_test=test_data[top_3_features_lime]
+lime_data_t.to_csv('lime_data_t.csv', index=False)
+lime_data_test.to_csv('lime_data_test.csv', index=False)
+###### dice :
+
+dice_data_t=train_data[top_3_features_dice]
+dice_data_test=test_data[top_3_features_dice]
+dice_data_t.to_csv('dice_data_t.csv', index=False)
+dice_data_test.to_csv('dice_data_test.csv', index=False)
+################################################################
+
+def prediction(trian_data,test_data,trian_labels,test_labels,model):
+        import pandas as pd
+        import numpy as np
+        import math
+        import json
+        import plotly.graph_objs as go
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import classification_report
+        from sklearn.preprocessing import OneHotEncoder
+        from sklearn.metrics import plot_roc_curve
+        from sklearn.model_selection import cross_val_score
+        import matplotlib.pyplot as plt
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.model_selection import train_test_split
+        from sklearn.ensemble import GradientBoostingClassifier
+        from sklearn import preprocessing
+        from collections import Counter
+        import lightgbm as lgb
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.ensemble import GradientBoostingClassifier
+        from sklearn.metrics import mean_squared_error,roc_auc_score,precision_score
+        pd.options.display.max_columns = 999
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import label_binarize
+        from sklearn.metrics import roc_curve, auc
+        from sklearn.multiclass import OneVsRestClassifier
+        from itertools import cycle
+        plt.style.use('ggplot')
+        import dice_ml
+        from dice_ml.utils import helpers
+        from sklearn.metrics import precision_score, roc_auc_score, recall_score, confusion_matrix, roc_curve, precision_recall_curve, accuracy_score
+        # DiCE imports
+        import dice_ml
+        from dice_ml.utils import helpers
+        #########
+        #importing from CSV to Pandas
+        trian_data=pd.read_csv("%s" % trian_data);
+        test_data=pd.read_csv("%s"% test_data);
+        trian_labels=pd.read_csv("%s"% trian_labels);
+        test_labels=pd.read_csv("%s"% test_labels);
+
+        col_names=trian_data.columns;
+        # loop to change each column to float type
+        for col in col_names:
+                trian_data[col] = trian_data[col].astype('float',copy=False);
+                test_data[col]= test_data[col].astype('float',copy=False);
+        #selecting raws with no nan values
+        new_train=trian_data
+        new_train["Result"]=trian_labels
+        new_test=test_data
+        new_test["Result"]=test_labels
+        trian_data_nonull=new_train.dropna()
+        test_data_nonull=new_test.dropna()
+        trian_label_nonull=trian_data_nonull["Result"]
+        test_label_nonull=test_data_nonull["Result"]
+        trian_data_nonull.drop(labels = ["Result",], axis=1,inplace=True )
+        test_data_nonull.drop(labels = ["Result",], axis=1,inplace=True )
+        for col in col_names:
+                trian_data_nonull[col] = trian_data_nonull[col].astype('float',copy=False);
+                test_data_nonull[col]= test_data_nonull[col].astype('float',copy=False);
+        trian_data_nonull.reset_index(drop=True, inplace=True)
+        test_data_nonull.reset_index(drop=True, inplace=True)
+        #Scaling using the Standard Scaler
+        sc_1=StandardScaler();
+        X_1=pd.DataFrame(sc_1.fit_transform(trian_data_nonull));
+        X_train, X_val, y_train, y_val = train_test_split(X_1, trian_label_nonull, test_size=0.25, random_state=0) # 0.25 x 0.8 = 0
+        test_scale_data=pd.DataFrame(sc_1.fit_transform(test_data_nonull))
+        if model =="lgbm": 
+
+                #Bulding them Model
+                lgbm_clf = lgb.LGBMClassifier(
+                num_leaves= 20,
+                min_data_in_leaf= 4,
+                feature_fraction= 0.2,
+                bagging_fraction=0.8,
+                bagging_freq=5,
+                learning_rate= 0.05,
+                verbose=1,
+                num_boost_round=603,
+                early_stopping_rounds=5,
+                metric="auc",
+                objective = 'binary',)
+
+                #Fitting the Model
+                lgbm_clf.fit(
+                X_train,
+                y_train,
+                eval_set = [(X_val, y_val)],
+                eval_metric="auc",
+                )
+                preds = lgbm_clf.predict_proba(test_scale_data,num_iteration=100)[:,1]
+                predict_model=lgbm_clf;
+        return preds,test_label_nonull
+
+# %% Cheack AUC score for classification:
+
+prob_shap,shap_labels_test=prediction("shap_data_t.csv","shap_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_lime,lime_labels_test=prediction("lime_data_t.csv","lime_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_lgbm,lgbm_labels_test=prediction("lgbm_data_t.csv","lgbm_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_dice,dice_labels_test=prediction("dice_data_t.csv","dice_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+#%% plots :
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve
+fpr1 , tpr1, thresholds1 = roc_curve(shap_labels_test, prob_shap)
+fpr2 , tpr2, thresholds2 = roc_curve(lime_labels_test, prob_lime)
+fpr3 , tpr3, thresholds3 = roc_curve(lgbm_labels_test, prob_lgbm)
+fpr4 , tpr4, thresholds4 = roc_curve(dice_labels_test, prob_dice)
+plt.plot([0,1],[0,1], 'k--')
+plt.plot(fpr1, tpr1, label= "Shap")
+plt.plot(fpr2, tpr2, label= "Lime")
+plt.plot(fpr3, tpr3, label= "LGBM")
+plt.plot(fpr4, tpr4, label= "Dice")
+plt.legend()
+plt.xlabel("FPR")
+plt.ylabel("TPR")
+plt.title('Receiver Operating Characteristic')
+plt.tight_layout()
+plt.savefig("Roc_metric_featuers.pdf")
+plt.show()
 # %%values 
 shap_acc=0.83
 lime_acc=0.78
