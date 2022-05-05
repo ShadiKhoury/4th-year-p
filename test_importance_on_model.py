@@ -138,18 +138,21 @@ def prediction(trian_data,test_data,trian_labels,test_labels,model):
                 eval_metric="auc",
                 )
                 preds = lgbm_clf.predict_proba(test_scale_data,num_iteration=100)[:,1]
+                preds_f=lgbm_clf.predict(test_scale_data,num_iteration=100)
                 predict_model=lgbm_clf;
-        return preds,test_label_nonull
+        return preds,test_label_nonull,preds_f
 
 # %% Cheack AUC score for classification:
 
-prob_shap,shap_labels_test=prediction("shap_data_t.csv","shap_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
-prob_lime,lime_labels_test=prediction("lime_data_t.csv","lime_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
-prob_lgbm,lgbm_labels_test=prediction("lgbm_data_t.csv","lgbm_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
-prob_dice,dice_labels_test=prediction("dice_data_t.csv","dice_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_shap,shap_labels_test,preds_shap=prediction("shap_data_t.csv","shap_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_lime,lime_labels_test,preds_lime=prediction("lime_data_t.csv","lime_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_lgbm,lgbm_labels_test,preds_lgbm=prediction("lgbm_data_t.csv","lgbm_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_dice,dice_labels_test,preds_dice=prediction("dice_data_t.csv","dice_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
 #%% plots :
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve
+from sklearn.metrics import f1_score
+from sklearn import metrics
 fpr1 , tpr1, thresholds1 = roc_curve(shap_labels_test, prob_shap)
 fpr2 , tpr2, thresholds2 = roc_curve(lime_labels_test, prob_lime)
 fpr3 , tpr3, thresholds3 = roc_curve(lgbm_labels_test, prob_lgbm)
@@ -166,24 +169,38 @@ plt.title('Receiver Operating Characteristic')
 plt.tight_layout()
 plt.savefig("Roc_metric_featuers.pdf")
 plt.show()
+#
+# Print the confusion matrix
+print(metrics.confusion_matrix(shap_labels_test, preds_shap))
+print(metrics.confusion_matrix(lime_labels_test, preds_lime))
+print(metrics.confusion_matrix(lgbm_labels_test, preds_lgbm))
+print(metrics.confusion_matrix(dice_labels_test, preds_dice))
+# Print the precision and recall, among other metrics
+print(metrics.classification_report(shap_labels_test, preds_shap, digits=3))
+print(metrics.classification_report(lime_labels_test, preds_lime, digits=3))
+print(metrics.classification_report(lgbm_labels_test, preds_lgbm, digits=3))
+print(metrics.classification_report(dice_labels_test, preds_dice, digits=3))
+
+print(f1_score(shap_labels_test, preds_shap, average=None))
+print(f1_score(lime_labels_test, preds_lime, average=None))
 # %%values 
-shap_acc=0.83
-lime_acc=0.78
-lgbm_acc=0.56
-dice_acc=0.77
-acc={"shap_acc":shap_acc,"lime_acc":lime_acc,"lgbm_acc":lgbm_acc,"dice_acc":dice_acc}
-import numpy as np
-import matplotlib.pyplot as plt
-metrics = list(acc.keys())
-values = list(acc.values())
-fig = plt.figure(figsize = (10, 5))
+#shap_acc=0.83
+#lime_acc=0.78
+#lgbm_acc=0.56
+#dice_acc=0.77
+#acc={"shap_acc":shap_acc,"lime_acc":lime_acc,"lgbm_acc":lgbm_acc,"dice_acc":dice_acc}
+#import numpy as np
+#import matplotlib.pyplot as plt
+#metrics = list(acc.keys())
+#values = list(acc.values())
+#fig = plt.figure(figsize = (10, 5))
 # creating the bar plot
-plt.bar(metrics, values, color ='maroon',
-        width = 0.4)
+#plt.bar(metrics, values, color ='maroon',
+ #       width = 0.4)
  
-plt.xlabel("Importance Metric")
-plt.ylabel("Accuracy")
-plt.title("Model Accuracy by Importance Metric")
-plt.tight_layout()
-plt.show()
+#plt.xlabel("Importance Metric")
+#plt.ylabel("Accuracy")
+#plt.title("Model Accuracy by Importance Metric")
+#plt.tight_layout()
+#plt.show()
 # %%
