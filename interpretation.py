@@ -97,7 +97,26 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
             )
         preds = lgbm_clf.predict_proba(test_scale_data,num_iteration=100)
         predict_model=lgbm_clf;
-    #else:
+        
+    if model =="lgbm_blood":
+        #Bulding them Model
+        lgbm_clf = lgb.LGBMClassifier(
+            max_depth=8,
+            num_leaves=2*8,
+            subsample=0.8,
+            random_state=0,
+            learning_rate=0.01,)
+
+        #Fitting the Model
+        lgbm_clf.fit(
+            X_train,
+            y_train,
+            eval_set = [(X_val, y_val)],
+            eval_metric="auc",
+            )
+        preds = lgbm_clf.predict_proba(test_scale_data,num_iteration=100000)
+        predict_model=lgbm_clf;
+        
 
     #from sklearn import metrics
     #metrics.plot_roc_curve(model, test_scale_data, test_labels) 
@@ -546,7 +565,7 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         
         #Ploting all 
         normlazied_df.index=["shap","lime","lgbm","dice_global"]
-        normlazied_df.plot.barh(colormap='tab10');
+        normlazied_df.plot.barh(colormap='tab20');
         plt.gca().invert_yaxis()
         
         plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left',fontsize = 'small',prop={'size': 5})
