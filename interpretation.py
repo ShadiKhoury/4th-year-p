@@ -105,7 +105,8 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
             num_leaves=2*8,
             subsample=0.8,
             random_state=0,
-            learning_rate=0.01,)
+            learning_rate=0.01,
+            )
 
         #Fitting the Model
         lgbm_clf.fit(
@@ -565,11 +566,12 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
         
         #Ploting all 
         normlazied_df.index=["shap","lime","lgbm","dice_global"]
-        normlazied_df.plot.barh(colormap='tab20');
+        normlazied_df.plot.barh(colormap='tab20',fontsize=18);
         plt.gca().invert_yaxis()
         
-        plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left',fontsize = 'small',prop={'size': 5})
-        
+        plt.legend(loc='best',fontsize = 'xxx-large',prop={'size': 6},facecolor='white',framealpha=0.5,fancybox=True,edgecolor='white')
+        plt.rc('xtick', labelsize=22) 
+        plt.rc('ytick', labelsize=2,color='black') 
         plt.xlabel('Normlized Importance')
         plt.ylabel('Features importance Metric')
         plt.savefig("normalize.pdf")

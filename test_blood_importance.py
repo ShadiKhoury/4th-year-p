@@ -1,10 +1,10 @@
 
 #%%
 import json
+from re import A
 import pandas as pd
 import numpy as np
 import os
-from sklearn.metrics import roc_auc_score
 # Opening JSON file
 im_df = pd.read_json('all_norm_Importance.json')
 sorted_df_shap = im_df.sort_values(["shap"], ascending=False)
@@ -16,34 +16,34 @@ indxs_shap=list(sorted_df_shap.index)
 indxs_lgbm=list(sorted_df_lgbm.index)
 indxs_lime=list(sorted_df_lime.index)
 indxs_d=list(sorted_df_dice.index)
-top_3_features_shap=indxs_shap[:3]
-top_3_features_lgbm=indxs_lgbm[:3]
-top_3_features_lime=indxs_lime[:3]
-top_3_features_dice=indxs_d[:3] 
+top_6_features_shap=indxs_shap[:5]
+top_6_features_lgbm=indxs_lgbm[:5]
+top_6_features_lime=indxs_lime[:5]
+top_6_features_dice=indxs_d[:5] 
 
 # %%
-train_data= pd.read_csv("train_data.csv")
-test_data= pd.read_csv("test_data.csv")
-label_data=pd.read_csv("train_labels.csv")
+train_data= pd.read_csv("train_blood.csv")
+test_data= pd.read_csv("test_blood.csv")
+label_data=pd.read_csv("y_train_blood.csv")
 ##### shap
-shap_data_t=train_data[top_3_features_shap]
-shap_data_test=test_data[top_3_features_shap]
+shap_data_t=train_data[top_6_features_shap]
+shap_data_test=test_data[top_6_features_shap]
 shap_data_t.to_csv('shap_data_t.csv', index=False)
 shap_data_test.to_csv('shap_data_test.csv', index=False)
 ################# lgbm
-lgbm_data_t=train_data[top_3_features_lgbm]
-lgbm_data_test=test_data[top_3_features_lgbm]
+lgbm_data_t=train_data[top_6_features_lgbm]
+lgbm_data_test=test_data[top_6_features_lgbm]
 lgbm_data_t.to_csv('lgbm_data_t.csv', index=False)
 lgbm_data_test.to_csv('lgbm_data_test.csv', index=False)
 ######## lime
-lime_data_t=train_data[top_3_features_lime]
-lime_data_test=test_data[top_3_features_lime]
+lime_data_t=train_data[top_6_features_lime]
+lime_data_test=test_data[top_6_features_lime]
 lime_data_t.to_csv('lime_data_t.csv', index=False)
 lime_data_test.to_csv('lime_data_test.csv', index=False)
 ###### dice :
 
-dice_data_t=train_data[top_3_features_dice]
-dice_data_test=test_data[top_3_features_dice]
+dice_data_t=train_data[top_6_features_dice]
+dice_data_test=test_data[top_6_features_dice]
 dice_data_t.to_csv('dice_data_t.csv', index=False)
 dice_data_test.to_csv('dice_data_test.csv', index=False)
 ################################################################
@@ -115,40 +115,35 @@ def prediction(trian_data,test_data,trian_labels,test_labels,model):
         X_1=pd.DataFrame(sc_1.fit_transform(trian_data_nonull));
         X_train, X_val, y_train, y_val = train_test_split(X_1, trian_label_nonull, test_size=0.25, random_state=0) # 0.25 x 0.8 = 0
         test_scale_data=pd.DataFrame(sc_1.fit_transform(test_data_nonull))
-        if model =="lgbm": 
+        if model =="lgbm_blood":
+            #Bulding them Model
+            lgbm_clf = lgb.LGBMClassifier(
+            max_depth=8,
+            num_leaves=2^8,
+            min_data_in_leaf=50,
+            subsample=0.8,
+            random_state=0,
+            learning_rate=0.01,
+            )
 
-                #Bulding them Model
-                lgbm_clf = lgb.LGBMClassifier(
-                num_leaves= 20,
-                min_data_in_leaf= 4,
-                feature_fraction= 0.2,
-                bagging_fraction=0.8,
-                bagging_freq=5,
-                learning_rate= 0.05,
-                verbose=1,
-                num_boost_round=603,
-                early_stopping_rounds=5,
-                metric="auc",
-                objective = 'binary',)
-
-                #Fitting the Model
-                lgbm_clf.fit(
+            #Fitting the Model
+            lgbm_clf.fit(
                 X_train,
                 y_train,
                 eval_set = [(X_val, y_val)],
                 eval_metric="auc",
                 )
-                preds = lgbm_clf.predict_proba(test_scale_data,num_iteration=100)[:,1]
-                preds_f=lgbm_clf.predict(test_scale_data,num_iteration=100)
-                predict_model=lgbm_clf;
+            preds = lgbm_clf.predict_proba(test_scale_data,num_iteration=100000)[:,1]
+            preds_f=lgbm_clf.predict(test_scale_data,num_iteration=100)
+            predict_model=lgbm_clf;
         return preds,test_label_nonull,preds_f
 
 # %% Cheack AUC score for classification:
 
-prob_shap,shap_labels_test,preds_shap=prediction("shap_data_t.csv","shap_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
-prob_lime,lime_labels_test,preds_lime=prediction("lime_data_t.csv","lime_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
-prob_lgbm,lgbm_labels_test,preds_lgbm=prediction("lgbm_data_t.csv","lgbm_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
-prob_dice,dice_labels_test,preds_dice=prediction("dice_data_t.csv","dice_data_test.csv","train_labels.csv","test_labels.csv","lgbm")
+prob_shap,shap_labels_test,preds_shap=prediction("shap_data_t.csv","shap_data_test.csv","train_labels.csv","test_labels.csv","lgbm_blood")
+prob_lime,lime_labels_test,preds_lime=prediction("lime_data_t.csv","lime_data_test.csv","train_labels.csv","test_labels.csv","lgbm_blood")
+prob_lgbm,lgbm_labels_test,preds_lgbm=prediction("lgbm_data_t.csv","lgbm_data_test.csv","train_labels.csv","test_labels.csv","lgbm_blood")
+prob_dice,dice_labels_test,preds_dice=prediction("dice_data_t.csv","dice_data_test.csv","train_labels.csv","test_labels.csv","lgbm_blood")
 #%% plots :
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve
@@ -159,18 +154,20 @@ fpr2 , tpr2, thresholds2 = roc_curve(lime_labels_test, prob_lime)
 fpr3 , tpr3, thresholds3 = roc_curve(lgbm_labels_test, prob_lgbm)
 fpr4 , tpr4, thresholds4 = roc_curve(dice_labels_test, prob_dice)
 plt.plot([0,1],[0,1], 'k--')
-plt.plot(fpr1, tpr1, label= "Shap")
-plt.plot(fpr2, tpr2, label= "Lime",linewidth=8,alpha=0.4,color="purple")
-plt.plot(fpr3, tpr3, label= "LGBM")
-plt.plot(fpr4, tpr4, label= "Dice",alpha=0.4,linewidth=2,color="green")
+plt.plot(fpr1, tpr1, label= "Shap",color="red",linewidth=8,alpha=0.3)
+#plt.show()
+plt.plot(fpr2, tpr2, label= "Lime",color="cyan")
+plt.plot(fpr3, tpr3, label= "LGBM",color="blue" ,alpha=0.3,linewidth=2)
+plt.plot(fpr4, tpr4, label= "Dice",color="limegreen")
 plt.legend(loc='best',fontsize = 'xx-large',prop={'size': 12},facecolor='white',framealpha=0.5,fancybox=True,edgecolor='white')
 plt.xlabel("FPR")
 plt.ylabel("TPR")
 plt.title('Receiver Operating Characteristic')
 plt.tight_layout()
-plt.savefig("Roc_metric_featuers.pdf")
+plt.savefig("Roc_metric_featuers_blood.pdf")
 plt.show()
 #
+from sklearn.metrics import roc_auc_score
 print("The AUC Scores for each method : ")
 shap_auc_score=roc_auc_score(shap_labels_test, prob_shap)
 lime_auc_score=roc_auc_score(lime_labels_test, prob_lime)
@@ -181,7 +178,6 @@ print(f'Shap AUC :{shap_auc_score}')
 print(f'lime Auc :{lime_auc_score}')
 print(f'lgbm auc:{lgbm_auc_score}')
 print(f'dice auc:{dice_auc}')
-
 # Print the confusion matrix
 print(metrics.confusion_matrix(shap_labels_test, preds_shap))
 print(metrics.confusion_matrix(lime_labels_test, preds_lime))
