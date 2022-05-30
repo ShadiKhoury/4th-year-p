@@ -565,15 +565,15 @@ def interpretation (trian_data,test_data,trian_labels,test_labels,model,feature_
             normlazied_df[i]=[jdd,jdd1,jdd2,jdd5]
         
         #Ploting all 
+        #plt.style.use('seaborn-whitegrid')
         normlazied_df.index=["shap","lime","lgbm","dice_global"]
-        normlazied_df.plot.barh(colormap='tab20',fontsize=18);
+        normlazied_df.plot.barh(colormap='tab20',fontsize=23,width=1,);
         plt.gca().invert_yaxis()
-        
-        plt.legend(loc='best',fontsize = 'xxx-large',prop={'size': 6},facecolor='white',framealpha=0.5,fancybox=True,edgecolor='white')
-        plt.rc('xtick', labelsize=22) 
-        plt.rc('ytick', labelsize=2,color='black') 
-        plt.xlabel('Normlized Importance')
-        plt.ylabel('Features importance Metric')
+        plt.legend(loc='best',fontsize = 'xxx-large',prop={'size': 9},facecolor='white',framealpha=0.55,fancybox=True,edgecolor='gray')
+        plt.rc('xtick', labelsize=22)
+        plt.rc('ytick', labelsize=22,color='black') 
+        plt.xlabel('Normlized Importance',color="black")
+        plt.ylabel('Features importance Metric',color="black")
         plt.savefig("normalize.pdf")
         plt.tight_layout()
         plt.show()

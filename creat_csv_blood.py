@@ -23,7 +23,7 @@ cols = [c for c in train.columns if not any(s in c for s in cols_to_filter)]
 
 y_train = train["Death"]
 y_test = test["Death"]
-with open(r"C:\Users\shade\Desktop\עבודות\שנה ד״\פרויקט\VS_project\4th-year-project\BloodStream\feature_lists\feature_lists\20_features.txt") as file:
+with open(r"C:\Users\shade\Desktop\עבודות\שנה ד״\פרויקט\VS_project\4th-year-project\BloodStream\data\data\20_features.txt") as file:
     cols = [line.strip() for line in file]
 
 x_train = train[cols].copy().reset_index(drop=True)

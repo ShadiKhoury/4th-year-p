@@ -23,7 +23,30 @@ fig.subplots_adjust(top=0.95), fig.subplots_adjust(bottom=0.05),fig.subplots_adj
 fig.tight_layout()
 
 plt.show()
+#Correlation with output variable
+from sklearn.feature_selection import mutual_info_regression
+discrete_features = data.dtypes == int
 
+def make_mi_scores(X, y, discrete_features):
+    mi_scores = mutual_info_regression(X, y, discrete_features=discrete_features)
+    mi_scores = pd.Series(mi_scores, name="MI Scores", index=X.columns)
+    mi_scores = mi_scores.sort_values(ascending=False)
+    return mi_scores
+
+mi_scores = make_mi_scores(data, label_data['corona_result'], discrete_features)
+mi_scores[::3]
+
+def plot_mi_scores(scores):
+    scores = scores.sort_values(ascending=True)
+    width = np.arange(len(scores))
+    ticks = list(scores.index)
+    plt.barh(width, scores)
+    plt.yticks(width, ticks)
+    plt.title("Mutual Information Scores")
+
+
+plt.figure(dpi=100, figsize=(8, 5))
+plot_mi_scores(mi_scores)
 
 # bloodStream
 
@@ -50,3 +73,6 @@ fig.tight_layout()
 
 plt.show()
 
+corr_blood = data.corr(label_data['Death'])
+sns.heatmap(corr_blood, annot=True, cmap=plt.cm.Reds)
+plt.show()
