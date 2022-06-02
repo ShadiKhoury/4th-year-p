@@ -21,7 +21,7 @@ where the args are :
 6)'--feature_imprtance_type'
 # Imports
 <
-
+![image](https://user-images.githubusercontent.com/88155916/171558260-d28901a0-7fe0-4cc0-b5e6-38c341afa2cb.png)
 
 >
 ## Output
