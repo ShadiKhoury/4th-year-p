@@ -1,7 +1,11 @@
+![Tel_Aviv_university_logo_-_English](https://user-images.githubusercontent.com/88155916/171557623-1c7b3463-e9f6-48b8-9011-21443b542d9e.png)
+
 # 4'th year Grad project in Bc.s in biomedical engineering
 my 4th year project for Bc.s in biomedical engineering
+
 ### Interpretation
 the main objective of this project os to validate diffrent feature impoertnace methods and understand thier diffrences on Real world Clincial data 
+# How dose the code work ?
 
 To run the Script use Interpoation.py 
 where the args are : 
