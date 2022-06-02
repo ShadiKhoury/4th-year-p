@@ -36,5 +36,7 @@ parser.add_argument('--feature_imprtance_type', metavar='importance_type',type =
 args = parser.parse_args()
 
 >
-
+## Output
 and in turn this script predoces a jason file and a Barh plot with the normlized impoertance Scores for each feature for each method
+
+![Importance score covid](https://user-images.githubusercontent.com/88155916/171557905-7c45638d-866f-44bd-b8ba-97502ac8a9d3.jpeg)
