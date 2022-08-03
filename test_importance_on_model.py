@@ -22,8 +22,8 @@ top_3_features_lime=indxs_lime[:3]
 top_3_features_dice=indxs_d[:3] 
 
 # %%
-train_data= pd.read_csv("train_data.csv")
-test_data= pd.read_csv("test_data.csv")
+train_data= pd.read_csv(r"C:\Users\shade\Desktop\עבודות\שנה ד״\פרויקט\VS_project\4th-year-project\Data\train_data.csv")
+test_data= pd.read_csv(r"C:\Users\shade\Desktop\עבודות\שנה ד״\פרויקט\VS_project\4th-year-project\Data\test_data.csv")
 label_data=pd.read_csv("train_labels.csv")
 ##### shap
 shap_data_t=train_data[top_3_features_shap]
@@ -187,14 +187,19 @@ print(metrics.confusion_matrix(shap_labels_test, preds_shap))
 print(metrics.confusion_matrix(lime_labels_test, preds_lime))
 print(metrics.confusion_matrix(lgbm_labels_test, preds_lgbm))
 print(metrics.confusion_matrix(dice_labels_test, preds_dice))
+
 # Print the precision and recall, among other metrics
 print(metrics.classification_report(shap_labels_test, preds_shap, digits=3))
 print(metrics.classification_report(lime_labels_test, preds_lime, digits=3))
 print(metrics.classification_report(lgbm_labels_test, preds_lgbm, digits=3))
 print(metrics.classification_report(dice_labels_test, preds_dice, digits=3))
 
+#F1 Scores
+print("Print the F1 Scores for each method : ")
 print(f1_score(shap_labels_test, preds_shap, average=None))
 print(f1_score(lime_labels_test, preds_lime, average=None))
+print(f1_score(lgbm_labels_test, preds_lgbm, average=None))
+print(f1_score(dice_labels_test, preds_dice, average=None))
 # %%values 
 #shap_acc=0.83
 #lime_acc=0.78
